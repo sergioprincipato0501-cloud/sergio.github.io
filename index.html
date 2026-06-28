@@ -3,23 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Il Mio Primo Sito</title>
+    <title>Snake Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 40px;
-            background-color: #f0f8ff;
+            background: #0f0f1e;
+            color: white;
             text-align: center;
+            margin: 0;
+            padding: 20px;
         }
         h1 {
-            color: #1e90ff;
+            color: #0f0;
+            margin-bottom: 10px;
+        }
+        #game-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 4px solid #0f0;
+            border-radius: 10px;
+            background: #111;
+            box-shadow: 0 0 20px #0f0;
+        }
+        .info {
+            margin: 15px 0;
+            font-size: 1.2em;
+        }
+        button {
+            margin-top: 10px;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            background: #0f0;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0c0;
         }
     </style>
 </head>
 <body>
-    <h1>Ciao! Benvenuto nel mio sito</h1>
-    <p>Questo sito è stato creato con HTML e pubblicato gratis su GitHub.</p>
-    <p>Funziona perfettamente!</p>
+    <h1>🐍 Snake Game</h1>
+    <div class="info">
+        Punteggio: <span id="score">0</span>
+    </div>
+    
+    <div id="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <p>Usa le frecce della tastiera ↑ ↓ ← → </p>
+    <button onclick="startGame()">▶️ Nuovo Gioco</button>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{ x: 10, y: 10 }];
+        let food = { x: 15, y: 15 };
+        let dx = 0;
+        let dy = 0;
+        let score = 0;
+        let gameInterval;
+        let gameSpeed = 100;
+
+        function drawGame() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // Collisione muri
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                gameOver();
+                return;
+            }
+
+            // Collisione con se stesso
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    gameOver();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Mangia cibo
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreElement.textContent = score;
+                generateFood();
+
+                // Aumenta velocità ogni 50 punti
+                if (score % 50 === 0 && gameSpeed > 50) {
+                    gameSpeed -= 10;
+                    clearInterval(gameInterval);
+                    gameInterval = setInterval(drawGame, gameSpeed);
+                }
+            } else {
+                snake.pop();
+            }
+
+            // Disegna
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Serpente
+            ctx.fillStyle = "#0f0";
+            for (let segment of snake) {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+            }
+
+            // Cibo
+            ctx.fillStyle = "#f00";
+            ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * tileCount),
+                y: Math.floor(Math.random() * tileCount)
+            };
+            for (let segment of snake) {
+                if (food.x === segment.x && food.y === segment.y) {
+                    generateFood();
+                    return;
+                }
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            alert("Game Over! Punteggio: " + score + "\nPremi OK per giocare di nuovo");
+            startGame();
+        }
+
+        function startGame() {
+            snake = [{ x: 10, y: 10 }];
+            dx = 1;
+            dy = 0;
+            score = 0;
+            scoreElement.textContent = "0";
+            gameSpeed = 100;
+            generateFood();
+            clearInterval(gameInterval);
+            gameInterval = setInterval(drawGame, gameSpeed);
+        }
+
+        // Controlli tastiera
+        document.addEventListener("keydown", e => {
+            switch(e.key) {
+                case "ArrowUp":    if (dy !== 1) { dx = 0; dy = -1; } break;
+                case "ArrowDown":  if (dy !== -1) { dx = 0; dy = 1; } break;
+                case "ArrowLeft":  if (dx !== 1) { dx = -1; dy = 0; } break;
+                case "ArrowRight": if (dx !== -1) { dx = 1; dy = 0; } break;
+            }
+        });
+
+        // Avvio automatico
+        window.onload = () => {
+            generateFood();
+            // Prima partita automatica
+            setTimeout(() => {
+                startGame();
+            }, 500);
+        };
+    </script>
 </body>
 </html>
