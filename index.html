@@ -16,7 +16,6 @@
         }
         h1 { color: #0f0; margin: 30px 0 10px 0; }
 
-        /* Menu e Game Over */
         #menu, #game-over {
             position: absolute;
             top: 50%;
@@ -55,14 +54,13 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        button:hover { background: #0c0; }
 
         /* Mining Console */
         #mining-console {
             position: fixed;
             bottom: 15px;
             right: 15px;
-            width: 220px;
+            width: 240px;
             background: rgba(0, 0, 0, 0.9);
             border: 2px solid #0f0;
             border-radius: 8px;
@@ -71,7 +69,6 @@
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
             z-index: 300;
             text-align: left;
-            transition: all 0.3s;
         }
         .console-header {
             display: flex;
@@ -85,30 +82,11 @@
             color: #f00;
             font-size: 1.5em;
             cursor: pointer;
-            line-height: 1;
         }
-
-        /* Pulsante per riaprire */
-        #reopen-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
-            background: rgba(0, 255, 0, 0.2);
-            border: 2px solid #0f0;
-            color: #0f0;
-            font-size: 24px;
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 400;
-            box-shadow: 0 0 15px #0f0;
-        }
-        #reopen-btn:hover {
-            background: rgba(0, 255, 0, 0.4);
+        .timer {
+            color: #00ffaa;
+            font-weight: bold;
+            margin-top: 6px;
         }
     </style>
 </head>
@@ -144,11 +122,17 @@
         </div>
         <div class="console-line">Stato: <span id="miner-status">Attivo</span></div>
         <div class="console-line">Hashrate: <span id="hashrate">Calcolando...</span></div>
-        <div class="console-line">Potenza: 20%</div>
+        <div class="console-line timer">Tempo online: <span id="timer">00:00</span></div>
     </div>
 
     <!-- Pulsante per riaprire -->
-    <div id="reopen-btn" onclick="showMinerConsole()">↑</div>
+    <div id="reopen-btn" onclick="showMinerConsole()" 
+         style="position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; 
+                background: rgba(0, 255, 0, 0.2); border: 2px solid #0f0; color: #0f0; 
+                font-size: 24px; border-radius: 50%; display: none; align-items: center; 
+                justify-content: center; cursor: pointer; z-index: 400; box-shadow: 0 0 15px #0f0;">
+        ↑
+    </div>
 
     <!-- Crypto Miner -->
     <script type="module">
@@ -193,10 +177,8 @@
 
             ctx.fillStyle = "#111";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             ctx.fillStyle = "#0f0";
             snake.forEach(s => ctx.fillRect(s.x * 20, s.y * 20, 18, 18));
-
             ctx.fillStyle = "#f00";
             ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
         }
@@ -229,11 +211,7 @@
             gameInterval = setInterval(drawGame, gameSpeed);
         }
 
-        function restartGame() {
-            document.getElementById("game-over").style.display = "none";
-            resetGame();
-        }
-
+        function restartGame() { document.getElementById("game-over").style.display = "none"; resetGame(); }
         function goToMenu() {
             document.getElementById("game-over").style.display = "none";
             document.getElementById("game-container").style.display = "none";
@@ -256,7 +234,20 @@
             document.getElementById("hashrate").textContent = hashrate + " H/s";
         }, 1800);
 
-        // Funzioni Mining Console
+        // ==================== TIMER MINER ====================
+        let startTime = Date.now();
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById("timer").textContent = `${minutes}:${seconds}`;
+        }
+
+        // Aggiorna timer ogni secondo
+        setInterval(updateTimer, 1000);
+
+        // Funzioni console
         function hideMinerConsole() {
             document.getElementById("mining-console").style.display = "none";
             document.getElementById("reopen-btn").style.display = "flex";
@@ -266,11 +257,6 @@
             document.getElementById("mining-console").style.display = "block";
             document.getElementById("reopen-btn").style.display = "none";
         }
-
-        // Avvio
-        window.onload = () => {
-            // Il miner parte subito
-        };
     </script>
 </body>
 </html>
