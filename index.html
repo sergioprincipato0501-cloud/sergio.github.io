@@ -17,7 +17,6 @@
         }
         h1 { color: #0f0; margin: 20px 0 10px 0; }
 
-        /* Menu e Game Over */
         #menu, #game-over {
             position: absolute;
             top: 50%;
@@ -47,7 +46,6 @@
             box-shadow: 0 0 25px #0f0;
         }
 
-        /* Pulsante Desktop per mostrare controlli mobili */
         #desktop-controls-btn {
             position: absolute;
             top: 15px;
@@ -62,66 +60,47 @@
             z-index: 500;
         }
 
-        /* Controlli Mobili */
+        /* Controlli Mobili - Layout a Croce */
         #mobile-controls {
             display: none;
-            margin: 15px auto;
-            width: 220px;
+            margin: 20px auto;
+            width: 240px;
         }
-        .controls-grid {
+        .dpad {
             display: grid;
-            grid-template-columns: 70px 70px 70px;
-            gap: 8px;
+            grid-template-columns: 80px 80px 80px;
+            gap: 6px;
             justify-content: center;
         }
-        .control-btn {
-            width: 70px;
-            height: 70px;
-            background: rgba(0, 255, 0, 0.2);
-            border: 2px solid #0f0;
+        .dpad div { height: 70px; }
+        .btn {
+            background: rgba(0, 255, 0, 0.15);
+            border: 3px solid #0f0;
             color: #0f0;
-            font-size: 28px;
+            font-size: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 12px;
             user-select: none;
         }
+        .up    { grid-column: 2; }
+        .left  { grid-column: 1; grid-row: 2; }
+        .right { grid-column: 3; grid-row: 2; }
+        .down  { grid-column: 2; grid-row: 3; }
+
         .pause-btn {
-            grid-column: span 3;
-            height: 60px;
+            margin-top: 15px;
+            padding: 15px 40px;
             font-size: 18px;
             background: #ff8800;
-        }
-
-        button {
-            margin: 10px;
-            padding: 12px 25px;
-            font-size: 1.1em;
-            background: #0f0;
-            color: black;
+            color: white;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            border-radius: 50px;
+            width: 100%;
         }
 
-        /* Mining Console */
-        #mining-console {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            width: 240px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #0f0;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.9em;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-            z-index: 300;
-            text-align: left;
-        }
-        .console-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .close-btn { background: none; border: none; color: #f00; font-size: 1.5em; cursor: pointer; }
+        button { margin: 10px; padding: 12px 25px; font-size: 1.1em; background: #0f0; color: black; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -141,24 +120,25 @@
 
         <!-- Controlli Mobili -->
         <div id="mobile-controls">
-            <div class="controls-grid">
+            <div class="dpad">
                 <div></div>
-                <div class="control-btn" onclick="move('up')">↑</div>
+                <div class="btn up" onclick="move('up')">↑</div>
                 <div></div>
                 
-                <div class="control-btn" onclick="move('left')">←</div>
-                <div class="control-btn pause-btn" onclick="togglePause()">⏸️ PAUSA</div>
-                <div class="control-btn" onclick="move('right')">→</div>
+                <div class="btn left" onclick="move('left')">←</div>
+                <div></div>
+                <div class="btn right" onclick="move('right')">→</div>
                 
                 <div></div>
-                <div class="control-btn" onclick="move('down')">↓</div>
+                <div class="btn down" onclick="move('down')">↓</div>
                 <div></div>
             </div>
+            <button class="pause-btn" onclick="togglePause()">⏸️ PAUSA / RIPRENDI</button>
         </div>
     </div>
 
     <!-- GAME OVER -->
-    <div id="game-over">
+    <div id="game-over" style="display: none;">
         <h1>Game Over</h1>
         <div class="score">Punteggio: <span id="final-score">0</span></div>
         <button onclick="restartGame()">Gioca di Nuovo</button>
@@ -200,7 +180,6 @@
 
         function drawGame() {
             if (isPaused) return;
-
             const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
             if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
@@ -261,17 +240,19 @@
             gameInterval = setInterval(drawGame, gameSpeed);
         }
 
-        function restartGame() { document.getElementById("game-over").style.display = "none"; resetGame(); }
+        function restartGame() { 
+            document.getElementById("game-over").style.display = "none"; 
+            resetGame(); 
+        }
         function goToMenu() {
             document.getElementById("game-over").style.display = "none";
             document.getElementById("game-container").style.display = "none";
             document.getElementById("menu").style.display = "block";
         }
 
-        // Controlli Tastiera (Desktop)
+        // Tastiera
         document.addEventListener("keydown", e => {
             if (document.getElementById("game-container").style.display !== "flex") return;
-            
             switch(e.key) {
                 case "ArrowUp":    if (dy !== 1) { dx = 0; dy = -1; } break;
                 case "ArrowDown":  if (dy !== -1) { dx = 0; dy = 1; } break;
@@ -282,9 +263,9 @@
         });
 
         // Controlli Touch
-        function move(direction) {
+        function move(dir) {
             if (isPaused) return;
-            switch(direction) {
+            switch(dir) {
                 case "up":    if (dy !== 1) { dx = 0; dy = -1; } break;
                 case "down":  if (dy !== -1) { dx = 0; dy = 1; } break;
                 case "left":  if (dx !== 1) { dx = -1; dy = 0; } break;
@@ -296,13 +277,12 @@
             isPaused = !isPaused;
         }
 
-        // Mostra/Nascondi controlli mobili
         function toggleMobileControls() {
-            const controls = document.getElementById("mobile-controls");
-            controls.style.display = controls.style.display === "block" ? "none" : "block";
+            const ctrl = document.getElementById("mobile-controls");
+            ctrl.style.display = (ctrl.style.display === "block") ? "none" : "block";
         }
 
-        // Mining Console
+        // Mining
         let startTime = Date.now();
         function updateTimer() {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -323,13 +303,6 @@
             document.getElementById("mining-console").style.display = "block";
             document.getElementById("reopen-btn").style.display = "none";
         }
-
-        // Rilevamento mobile
-        window.onload = () => {
-            if (/Mobi|Android/i.test(navigator.userAgent)) {
-                document.getElementById("mobile-controls").style.display = "block";
-            }
-        };
     </script>
 </body>
 </html>
